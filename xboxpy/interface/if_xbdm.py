@@ -190,7 +190,7 @@ api.write = write1
 hacked = False
 if True:
 
-  from xbox.pe import *
+  from xboxpy.xboxpy.pe import *
 
   modules=GetModules()
   xbdm_module = [module for module in modules if module['name'] == "xbdm.dll"][0]
