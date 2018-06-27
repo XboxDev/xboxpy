@@ -138,15 +138,20 @@ def Unswizzle(data, bits_per_pixel, size, pitch):
 
   assert(len(size) == 2)
   assert(size[0] == 640)
-  assert(size[1] == 480)
+  assert(size[1] <= 480)
+  assert(pitch == 2560)
+  assert(bits_per_pixel == 32)
 
   swiz = 0
   index = 0
   offset = 0
   deswiz = 0
 
-  for y in range(0, 480): # 30
-      for x in range(0, 640): # 10
+  width = size[0]
+  height = size[1]
+
+  for y in range(0, height): # 30
+      for x in range(0, width): # 10
           blockX = x // 64
           blockY = y // 16
 
@@ -167,12 +172,12 @@ def Unswizzle(data, bits_per_pixel, size, pitch):
                           s += i * 64
 
                           d = 0
-                          d += 2560*479 # Go to end of image
-                          d -= blockY * (17 * 2560) # Go up 17 lines?!
-                          d += (blockY * 10 + blockX) * (16 * 2560 + 256)
-                          d -= ((blockY * 10 + blockX) * 4 + l) * (4 * 2560 + 256)
+                          d += pitch*(height-1) # Go to end of image
+                          d -= blockY * (17 * pitch) # Go up 17 lines?!
+                          d += (blockY * 10 + blockX) * (16 * pitch + 256)
+                          d -= ((blockY * 10 + blockX) * 4 + l) * (4 * pitch + 256)
                           d += (((blockY * 10 + blockX) * 4 + l) * 16 + offY) * 16
-                          d -= 2560 * i
+                          d -= pitch * i
 
                           if True:
                             if ((blockY & 1) == 1):
@@ -188,6 +193,6 @@ def Unswizzle(data, bits_per_pixel, size, pitch):
 
   flipped = bytearray([0] * len(unswizzled))
   for i in range(0, size[1]):
-    flipped[i*2560:(i+1)*2560] = unswizzled[-2560*(i+1):-2560*i]
+    flipped[i*pitch:(i+1)*pitch] = unswizzled[-pitch*(i+1):-pitch*i]
 
   return bytes(flipped)
