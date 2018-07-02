@@ -197,9 +197,9 @@ if True:
   xbdm_base = xbdm_module['base']
   DmResumeThread_addr = resolve_export(35, image_base=xbdm_base)
 
-  hack = "0F20C05025FFFFFEFF0F22C08B5424088B1A8B4A048B4208E2028A03E203668B03E2028B03E2028803E203668903E2028903894208580F22C0B80000DB02C20400"
+  hack = "0F20C05025FFFFFEFF0F22C08B5424088B1A8B4A048B4208E2028A03E203668B03E2028B03E2028803E203668903E2028903E21F6089250000018089C129CC89E78D720CF3A4FFD38B25000001808944241C61894208580F22C0B80000DB02C2040090909090"
   xbdm_command("setmem addr=0x" + format(DmResumeThread_addr, 'X') + " data=" + hack)
- 
+
   #hack_bank = DmResumeThread_addr + (len(hack) // 2) # Put communication base behind the hack code [pretty shitty..]
   hack_bank = xbdm_base # Overwrite xbdm PE header
   #hack_bank = 0xd0032FC0 # Works on console ?
@@ -227,6 +227,11 @@ def xbdm_write_16(address, data):
 def xbdm_write_32(address, data):
   xbdm_hack(address, 6, int.from_bytes(data, byteorder='little', signed=False))
 
+def xbdm_call(address, stack):
+  assert(len(stack) < 64)
+  SetMem(hack_bank + 12, stack)
+  return xbdm_hack(address, 7, len(stack))
+
 def read2(address, size, physical):
   if physical:
     address |= 0x80000000
@@ -251,5 +256,14 @@ def write2(address, data, physical):
       return xbdm_write_32(address, data)
   return SetMem(address, data)
 
+
+def call(address, stack, registers=None):
+  assert(registers == None)
+  eax_bytes = xbdm_call(address, stack)
+  out_registers = {}
+  out_registers['eax'] = int.from_bytes(eax_bytes, byteorder='little', signed=False)
+  return out_registers
+
 api.read = read2
 api.write = write2
+api.call = call

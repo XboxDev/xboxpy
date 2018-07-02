@@ -15,29 +15,44 @@ mov ebx, [edx+0]        # Get address
 mov ecx, [edx+4]        # Get operation
 mov eax, [edx+8]        # Data; Might need this for writes
 
-read_u8:
-loop read_u16 # 1
+do_read_u8: # 1
+loop do_read_u16
 mov al, [ebx]
 
-read_u16:
-loop read_u32 # 2
+do_read_u16: # 2
+loop do_read_u32
 mov ax, [ebx]
 
-read_u32:
-loop write_u8 # 3
+do_read_u32: # 3
+loop do_write_u8
 mov eax, [ebx]
 
-write_u8:
-loop write_u16 # 4
+do_write_u8: # 4
+loop do_write_u16
 mov [ebx], al
 
-write_u16:
-loop write_u32 # 5
+do_write_u16: # 5
+loop do_write_u32
 mov [ebx], ax
 
-write_u32:
-loop cleanup # 6
+do_write_u32: # 6
+loop do_call
 mov [ebx], eax
+
+do_call:
+loop cleanup # 7
+pusha # Backup all vars
+mov [0x80010000], esp
+# eax = how many bytes follow at [edx+12]
+mov ecx, eax
+sub esp, ecx
+mov edi, esp
+lea esi, [edx+12]
+rep movsb
+call ebx # Call function
+mov esp, [0x80010000]
+mov [esp + 7*4], eax # Replace eax on stack with new one
+popa # Recover all vars and modified eax
 
 cleanup:
 mov [edx+8], eax        # Data; Might need this for reads
