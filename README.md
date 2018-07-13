@@ -13,3 +13,14 @@ You can also create a new issue if you have trouble with xboxpy.
 * Some interfaces will also allow you to specify the target Xbox using the 'XBOX' environment variable ('Host:Port')
 
 Not all interfaces support all functionality at this point.
+
+---
+
+(c)2018 XboxDev maintainers
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+*Contact us for other licensing options.*
