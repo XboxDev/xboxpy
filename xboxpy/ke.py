@@ -9,6 +9,8 @@ SCSI_IOCTL_DATA_UNSPECIFIED = 2
 IOCTL_SCSI_PASS_THROUGH        = 0x4D004
 IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x4D014
 
+PAGE_READWRITE = 0x04
+
 NULL = 0
 
 FALSE = 0x00000000
@@ -40,6 +42,9 @@ def KeTickCount():
 
 def MmAllocateContiguousMemory(NumberOfBytes):
   return call_stdcall(165, "<I", NumberOfBytes)
+
+def MmAllocateContiguousMemoryEx(NumberOfBytes, LowestAcceptableAddress, HighestAcceptableAddress, Alignment, Protect):
+  return call_stdcall(166, "<IIIII", NumberOfBytes, LowestAcceptableAddress, HighestAcceptableAddress, Alignment, Protect)
 
 def MmFreeContiguousMemory(BaseAddress):
   return call_stdcall(171, "<I", BaseAddress)
