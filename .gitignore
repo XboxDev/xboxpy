@@ -1,1 +1,7 @@
+# Cache
 __pycache__/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
