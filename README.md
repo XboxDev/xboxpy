@@ -24,10 +24,8 @@ Now xboxpy should be installed and ready for use!
 * You can define the interface you want to use using environment variable 'XBOX_IF':
   * 'XBDM' (default)
   * 'nxdk-rdt`
-  * 'gdb' (auto-detected if the `gdb` module exists)
+  * 'gdb'
 * Some interfaces will also allow you to specify the target Xbox using the 'XBOX' environment variable ('Host:Port')
-
-Not all interfaces support all functionality at this point.
 
 
 ### Develop
