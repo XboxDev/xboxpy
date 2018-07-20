@@ -123,11 +123,19 @@ def GetMem(addr, length):
 
 def SetMem(addr, data):
   value = bytes(data)
-  if True:
+
+  # Unfortunately XBDM has a maximum line-buffer of about ~500 symbols.
+  # We'll be conservative and only allow 200 bytes (400 hex digits).
+  # That leaves ~100 bytes for the actual command.
+  max_len = 200
+  if len(value) > max_len:
+    SetMem(addr, value[0:max_len])
+    SetMem(addr + max_len, value[max_len:])
+  else:
     cmd="setmem addr=0x" + format(addr, 'X') + " data="
-    for i in range(0, len(data)):
+    for i in range(0, len(value)):
       cmd += format(value[i], '02X')
-  xbdm_command(cmd)
+    xbdm_command(cmd)
 
 
 def delay_retry(reason):
@@ -190,7 +198,7 @@ api.write = write1
 hacked = False
 if True:
 
-  from xboxpy.xboxpy.pe import *
+  from xboxpy.pe import *
 
   modules=GetModules()
   xbdm_module = [module for module in modules if module['name'] == "xbdm.dll"][0]
