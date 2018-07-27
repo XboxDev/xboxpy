@@ -2,6 +2,7 @@ from . import api
 from . import get_xbox_address
 import socket
 from .dbg_pb2 import *
+import struct
 
 (HOST, PORT) = get_xbox_address(9269)
 
@@ -47,15 +48,15 @@ def write(address, data, physical):
   req.address = address
   res = _send_simple_request(req)
 
-def call(address, stack, registers=None):
+def call(address, stack=None):
   req = Request()
   req.type = Request.CALL
   req.address = address
-  req.data = stack
-  #FIXME: req.registers = registers
+  if stack is not None:
+    req.data = stack
   res = _send_simple_request(req)
   out_registers = {}
-  out_registers['eax'] = res.address
+  out_registers['eax'] = struct.unpack_from("<I", res.data, 7*4)[0]
   return out_registers
 
 api.read = read
