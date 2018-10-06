@@ -26,20 +26,34 @@ def xbdm_read_line():
     data += byte
   return data
 
-def xbdm_parse_response2(length=None):
+def xbdm_parse_response(length=None):
   try:
     res = xbdm_read_line()
-    if res[3] != 45: #b'-': #FIXME: how to compare a single letter to a byte string element?
+    if res[3] != ord('-'):
       raise
     status = int(res[0:3])
+    if res[4] != ord(' '):
+      raise
+    res = res[5:]
   except:
     return (None, None)
+
   if status == 200:
-    assert(res[0:5] == b'200- ')
-    return (status, str(res[5:], encoding='ascii'))
-  if status == 201:
     return (status, str(res, encoding='ascii'))
-  if status == 203:
+
+  elif status == 201:
+    return (status, str(res, encoding='ascii'))
+
+  elif status == 202:
+    lines = []
+    while True:
+      line = xbdm_read_line()
+      if line == b'.': #end of response
+        break
+      lines += [str(line, encoding='ascii')]
+    return (status, lines)
+
+  elif status == 203:
     res = bytearray()
 
     # This will not work with most commands, but "getfile" prefixes the
@@ -55,32 +69,31 @@ def xbdm_parse_response2(length=None):
       assert(remaining > 0)
       res += xbdm.recv(remaining)
     return (status, bytes(res))
-  if status == 202:
-    lines = []
-    while True:
-      line = xbdm_read_line()
-      if line == b'.': #end of response
-        break
-      lines += [str(line, encoding='ascii')]
-    return (status, lines)
-  print("Unknown status: " + str(status))
-  print("from response: " + str(res))
-  #FIXME: Read remaining buffer?!
-  assert(False)
+
+  elif status == 204:
+    return (status, str(res, encoding='ascii'))
+
+  else:
+    print("Unknown status: " + str(status))
+    print("from response: " + str(res))
+    #FIXME: Read remaining buffer?!
+
   return (status, res)
 
-#FIXME: For legacy reasons, should be updated?
-def xbdm_parse_response(length=None):
-  return xbdm_parse_response2(length)[1]
-
-def xbdm_command(cmd, length=None):
+def xbdm_command(cmd, data=None, length=None):
   #FIXME: If type is already in bytes we just send it binary!
   #print("Running '" + cmd + "'")
   xbdm.send(bytes(cmd + "\r\n", encoding='ascii'))
   #print("Sent")
-  lines = xbdm_parse_response(length)
+  status, lines = xbdm_parse_response(length)
+
+  # Respond with requested data
+  if status == 204:
+    xbdm.send(data)
+    status, lines = xbdm_parse_response()
+
   #print("Done")
-  return lines
+  return status, lines
 
 import re
 
@@ -110,7 +123,7 @@ def xbdm_parse_keys(string):
 
 def GetModules():
   modulesList = []
-  lines = xbdm_command("modules")
+  status, lines = xbdm_command("modules")
 
   for line in lines:
     module = xbdm_parse_keys(line)
@@ -124,7 +137,7 @@ def GetMem(addr, length):
     return bytes([])
   if False:
     cmd = "getmem addr=0x" + format(addr, 'X') + " length=0x" + format(length, 'X')
-    lines = xbdm_command(cmd)
+    status, lines = xbdm_command(cmd)
     data = bytearray()
     for line in lines:
       line = str(line, encoding='ascii').strip()
@@ -137,7 +150,7 @@ def GetMem(addr, length):
     assert(len(data) == length)
   else:
     cmd = "getmem2 addr=0x" + format(addr, 'X') + " length=0x" + format(length, 'X')
-    data = xbdm_command(cmd, length)
+    status, data = xbdm_command(cmd, length=length)
   return bytes(data)
 
 def SetMem(addr, data):
@@ -183,7 +196,7 @@ def connect():
         sys.exit("Unknown connection error")
     # Get login message
     try:
-      (status, data) = xbdm_parse_response2()
+      status, data = xbdm_parse_response()
       if status == None:
         raise
       if status != 201:
