@@ -35,7 +35,8 @@ def xbdm_parse_response2(length=None):
   except:
     return (None, None)
   if status == 200:
-    return (status, res)
+    assert(res[0:5] == b'200- ')
+    return (status, str(res[5:], encoding='ascii'))
   if status == 201:
     return (status, str(res, encoding='ascii'))
   if status == 203:
