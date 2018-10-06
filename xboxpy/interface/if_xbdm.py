@@ -61,7 +61,7 @@ def xbdm_parse_response2(length=None):
       line = xbdm_read_line()
       if line == b'.': #end of response
         break
-      lines += [line]
+      lines += [str(line, encoding='ascii')]
     return (status, lines)
   print("Unknown status: " + str(status))
   print("from response: " + str(res))
