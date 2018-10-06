@@ -41,6 +41,12 @@ def xbdm_parse_response2(length=None):
     return (status, str(res, encoding='ascii'))
   if status == 203:
     res = bytearray()
+
+    # This will not work with most commands, but "getfile" prefixes the
+    # transfer with the actual length, so we need to support it.
+    if length == 0:
+      length = struct.unpack("<I", xbdm.recv(4))[0]
+
     assert(length != None)
     while True:
       remaining = length - len(res)
@@ -104,6 +110,8 @@ def GetModules():
   return modulesList
 
 def GetMem(addr, length):
+  if length == 0:
+    return bytes([])
   if False:
     cmd = "getmem addr=0x" + format(addr, 'X') + " length=0x" + format(length, 'X')
     lines = xbdm_command(cmd)
