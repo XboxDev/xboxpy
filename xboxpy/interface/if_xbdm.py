@@ -261,7 +261,7 @@ def xbdm_call(address, stack):
 
 def read2(address, size, physical):
   if physical:
-    address |= 0x80000000
+    assert(False)
   if hacked:
     if size == 1:
       return xbdm_read_8(address)[0:1]
@@ -272,7 +272,7 @@ def read2(address, size, physical):
   return GetMem(address, size)
 def write2(address, data, physical):
   if physical:
-    address |= 0x80000000
+    assert(False)
   if hacked:
     size = len(data)
     if size == 1:
