@@ -82,31 +82,41 @@ def xbdm_command(cmd, length=None):
   #print("Done")
   return lines
 
+import re
+
+def xbdm_parse_keys(string):
+
+  #FIXME: Rewrite this function to work without `re`
+
+  result = dict(re.findall(r'(\S+)=(".*?"|\S+)', string))
+
+  # Clean up datatypes
+  for key in result:
+    if result[key][0:2] == '0x':
+      result[key] = int(result[key][2:], 16)
+    elif result[key][0] == '\"' and result[key][-1] == '\"':
+      #FIXME: Unescape strings?
+      result[key] = result[key].strip('"')
+    else:
+      assert(False)
+
+  # There might be keys without values (tags), so we add those now
+  tags = re.findall(r'(\S+)(?![^=])', string)
+  for tag in tags:
+    if tag not in result:
+      result[tag] = True
+
+  return result
+
 def GetModules():
   modulesList = []
   lines = xbdm_command("modules")
 
   for line in lines:
-
-    module ={}
-    line = line.decode("utf-8")
-
-    nameAddrChunks = line.split()
-
-    for nameAddrChunk in nameAddrChunks:
-       singleChunk = nameAddrChunk.split("=")    #name="xbdm.dll" -> ['name', '"xbdm.dll"']
-
-       if(len(singleChunk)==1):
-         value = True
-
-       elif((singleChunk[1][0] == '"') and (singleChunk[1][-1] == '"')): #contains a '"string"'
-         value = singleChunk[1].strip("\"")     #name of the module (without '"')
-
-       else:
-         value = int(singleChunk[1], 0)
-       module[singleChunk[0]] = value
+    module = xbdm_parse_keys(line)
     modulesList.append(module)
 
+  print(modulesList)
   return modulesList
 
 def GetMem(addr, length):
