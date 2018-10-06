@@ -23,11 +23,12 @@ Now xboxpy should be installed and ready for use!
 All code is internally imported by the `xboxpy` module.
 So all you have to do is: `import xboxpy`.
 
-You can choose the interface you want to use using environment variable 'XBOX_IF':
+You can choose the interface you want to use using the 'XBOX_IF' environment variable:
 
   * 'XBDM' (default) - part of the official Xbox Development Kit Debug Kernel by Microsoft.
   * 'nxdk-rdt' - [nxdk-rdt is an open-source Xbox Remote Dev Tool](https://github.com/XboxDev/nxdk-rdt).
   * 'gdb' - can be used to [interface with gdb](https://sourceware.org/gdb/onlinedocs/gdb/Python.html).
+  * 'none' - does nothing; provided for users which only require xboxpy for logic, but don't need remote access.
 
 Some interfaces will also allow you to specify the target Xbox using the 'XBOX' environment variable ('Host:Port').
 Not all interfaces support all functionality at this point.

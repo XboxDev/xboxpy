@@ -47,6 +47,8 @@ elif used_interface == 'gdb':
 elif used_interface == 'nxdk-rdt':
   print("Using nxdk-rdt interface")
   from . import if_nxdk_rdt
+elif used_interface == 'none':
+  print("Warning: 'none' interface does not allow remote access")
 else:
   print("Unknown interface '" + used_interface + "'")
   sys.exit(1)
