@@ -172,6 +172,38 @@ def WRITE_PORT_BUFFER_ULONG(Port, Buffer, Count):
   #IN ULONG Count
   call_stdcall(334, "<III", Port, Buffer, Count)
 
+def XcHMAC(pbKey, dwKeyLength, pbInput, dwInputLength, pbInput2, dwInputLength2, pbDigest):
+  #IN PUCHAR pbKey,
+  #IN ULONG dwKeyLength,
+  #IN PUCHAR pbInput,
+  #IN ULONG dwInputLength,
+  #IN PUCHAR pbInput2,
+  #IN ULONG dwInputLength2,
+  #OUT PUCHAR pbDigest
+  call_stdcall(340, "<IIIIIII", pbKey, dwKeyLength, pbInput, dwInputLength, pbInput2, dwInputLength2, pbDigest)
+
+
+def XcDESKeyParity(pbKey, dwKeyLength):
+  #IN OUT PUCHAR pbKey,
+  #IN ULONG dwKeyLength
+  call_stdcall(346, "<II", pbKey, dwKeyLength)
+
+def XcKeyTable(dwCipher, pbKeyTable, pbKey):
+  #IN ULONG dwCipher,
+  #OUT PUCHAR pbKeyTable,
+  #IN PUCHAR pbKey
+  call_stdcall(347, "<III", dwCipher, pbKeyTable, pbKey)
+
+def XcBlockCryptCBC(dwCipher, dwInputLength, pbOutput, pbInput, pbKeyTable, dwOp, pbFeedback):
+  #IN ULONG dwCipher,
+  #IN ULONG dwInputLength,
+  #OUT PUCHAR pbOutput,
+  #IN PUCHAR pbInput,
+  #IN PUCHAR pbKeyTable,
+  #IN ULONG dwOp,
+  #IN PUCHAR pbFeedback
+  call_stdcall(349, "<IIIIIII", dwCipher, dwInputLength, pbOutput, pbInput, pbKeyTable, dwOp, pbFeedback)
+
 def XboxLANKey():
   return pe.resolve_export(353)
 
