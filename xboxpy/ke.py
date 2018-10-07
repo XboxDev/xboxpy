@@ -172,6 +172,22 @@ def WRITE_PORT_BUFFER_ULONG(Port, Buffer, Count):
   #IN ULONG Count
   call_stdcall(334, "<III", Port, Buffer, Count)
 
+def XcSHAInit(pbSHAContext):
+  #OUT PUCHAR pbSHAContext
+  call_stdcall(335, "<I", pbSHAContext)
+
+def XcSHAUpdate(pbSHAContext, pbInput, dwInputLength):
+  #IN OUT PUCHAR pbSHAContext,
+  #IN PUCHAR pbInput,
+  #IN ULONG dwInputLength
+  call_stdcall(336, "<III", pbSHAContext, pbInput, dwInputLength)
+
+def XcSHAFinal(pbSHAContext, pbDigest):
+  #IN PUCHAR pbSHAContext,
+  #OUT PUCHAR pbDigest
+  call_stdcall(337, "<II", pbSHAContext, pbDigest)
+
+
 def XcHMAC(pbKey, dwKeyLength, pbInput, dwInputLength, pbInput2, dwInputLength2, pbDigest):
   #IN PUCHAR pbKey,
   #IN ULONG dwKeyLength,
