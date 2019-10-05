@@ -11,6 +11,9 @@ IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x4D014
 
 PAGE_READWRITE = 0x04
 
+MEM_COMMIT = 0x1000
+MEM_RESERVE = 0x2000
+
 NULL = 0
 
 FALSE = 0x00000000
@@ -21,6 +24,18 @@ HalRebootRoutine = 1
 HalQuickRebootRoutine = 2
 HalKdRebootRoutine = 3
 HalFatalErrorRebootRoutine = 4
+
+SYNCHRONIZE = 0x00100000
+STANDARD_RIGHTS_REQUIRED = 0x000F0000
+
+FileBasicInformation = 4
+FileNetworkOpenInformation = 34
+
+FILE_SHARE_READ = 1
+FILE_SHARE_WRITE = 2
+
+FILE_ALL_ACCESS = (STANDARD_RIGHTS_REQUIRED | SYNCHRONIZE | 0x1FF)
+
 
 def AvSendTVEncoderOption(RegisterBase, Option, Param, Result):
   #IN PVOID RegisterBase,
@@ -44,6 +59,11 @@ def HalReadWritePCISpace(BusNumber, SlotNumber, RegisterNumber, Buffer, Length, 
   #IN ULONG Length,
   #IN BOOLEAN WritePCISpace
   call_stdcall(46, "<IIIIII", BusNumber, SlotNumber, RegisterNumber, Buffer, Length, WritePCISpace)
+
+def HalRegisterShutdownNotification(ShutdownRegistration, Register):
+  #IN PHAL_SHUTDOWN_REGISTRATION ShutdownRegistration,
+  #IN BOOLEAN Register
+  call_stdcall(47, "<II", ShutdownRegistration, Register)
 
 def HalReturnToFirmware(Routine):
   #FIRMWARE_REENTRY Routine
@@ -111,6 +131,48 @@ def MmUnmapIoSpace(BaseAddress, NumberOfBytes):
   #IN SIZE_T NumberOfBytes,
   return call_stdcall(183, "<II", BaseAddress, NumberOfBytes)
 
+def NtAllocateVirtualMemory(BaseAddress, ZeroBits, RegionSize, AllocationType, Protect):
+  #IN OUT PVOID *BaseAddress,
+  #IN ULONG_PTR ZeroBits,
+  #IN OUT PSIZE_T RegionSize,
+  #IN ULONG AllocationType,
+  #IN ULONG Protect
+  return call_stdcall(184, "<IIIII", BaseAddress, ZeroBits, RegionSize, AllocationType, Protect)
+
+def NtClose(Handle):
+  # IN HANDLE Handle
+  return call_stdcall(187, "<I", Handle)
+
+def NtOpenFile(FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, ShareAccess, OpenOptions):
+  #OUT PHANDLE FileHandle,
+  #IN ACCESS_MASK DesiredAccess,
+  #IN POBJECT_ATTRIBUTES ObjectAttributes,
+  #OUT PIO_STATUS_BLOCK IoStatusBlock,
+  #IN ULONG ShareAccess,
+  #IN ULONG OpenOptions
+  return call_stdcall(202, "<IIIIII", FileHandle, DesiredAccess, ObjectAttributes, IoStatusBlock, ShareAccess, OpenOptions)
+
+def NtQueryInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass):
+  #IN HANDLE FileHandle,
+  #OUT PIO_STATUS_BLOCK IoStatusBlock,
+  #OUT PVOID FileInformation,
+  #IN ULONG Length,
+  #IN FILE_INFORMATION_CLASS FileInformationClass
+  return call_stdcall(211, "<IIIII", FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass)
+
+def NtSetEvent(EventHandle, PreviousState):
+  #IN HANDLE EventHandle,
+  #OUT PLONG PreviousState OPTIONAL
+  return call_stdcall(225, "<II", EventHandle, PreviousState)
+
+def NtSetInformationFile(FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass):
+  #IN HANDLE FileHandle,
+  #OUT PIO_STATUS_BLOCK IoStatusBlock,
+  #IN PVOID FileInformation,
+  #IN ULONG Length,
+  #IN FILE_INFORMATION_CLASS FileInformationClass
+  return call_stdcall(226, "<IIIII", FileHandle, IoStatusBlock, FileInformation, Length, FileInformationClass)
+
 def ObReferenceObjectByName(ObjectName, Attributes, ObjectType, ParseContext, Object):
   #IN POBJECT_STRING ObjectName,
   #IN ULONG Attributes,
@@ -118,6 +180,31 @@ def ObReferenceObjectByName(ObjectName, Attributes, ObjectType, ParseContext, Ob
   #IN OUT PVOID ParseContext OPTIONAL,
   #OUT PVOID *Object
   return call_stdcall(247, "<IIIII", ObjectName, Attributes, ObjectType, ParseContext, Object)
+
+def PsCreateSystemThreadEx(ThreadHandle, ThreadExtensionSize, KernelStackSize, TlsDataSize, ThreadId, StartRoutine, StartContext, CreateSuspended, DebuggerThread, SystemRoutine):
+  #OUT PHANDLE ThreadHandle,
+  #IN SIZE_T ThreadExtensionSize,
+  #IN SIZE_T KernelStackSize,
+  #IN SIZE_T TlsDataSize,
+  #OUT PHANDLE ThreadId OPTIONAL,
+  #IN PKSTART_ROUTINE StartRoutine,
+  #IN PVOID StartContext,
+  #IN BOOLEAN CreateSuspended,
+  #IN BOOLEAN DebuggerThread,
+  #IN PKSYSTEM_ROUTINE SystemRoutine OPTIONAL
+  return call_stdcall(255, "<IIIIIIIIII", ThreadHandle, ThreadExtensionSize, KernelStackSize, TlsDataSize, ThreadId, StartRoutine, StartContext, CreateSuspended, DebuggerThread, SystemRoutine)
+
+def RtlFillMemory(Destination, Length, Fill):
+  #PVOID Destination,
+  #ULONG Length,
+  #UCHAR Fill
+  call_stdcall(284, "<III", Destination, Length, Fill)
+
+def RtlFillMemoryUlong(Destination, Length, Pattern):
+  #PVOID Destination,
+  #SIZE_T Length,
+  #ULONG Pattern
+  call_stdcall(285, "<III", Destination, Length, Pattern)
 
 def RtlInitAnsiString(DestinationString, SourceString):
   #IN OUT PANSI_STRING DestinationString,
@@ -228,6 +315,10 @@ def XboxAlternateSignatureKeys():
 
 def XePublicKeyData():
   return pe.resolve_export(355)
+
+def HalInitiateShutdown():
+  call_stdcall(360, "")
+
 
 def call_stdcall(function, types, *arguments):
   address = pe.resolve_export(function)
