@@ -83,13 +83,13 @@ def xbdm_parse_response(length=None):
 def xbdm_command(cmd, data=None, length=None):
   #FIXME: If type is already in bytes we just send it binary!
   #print("Running '" + cmd + "'")
-  xbdm.send(bytes(cmd + "\r\n", encoding='ascii'))
+  xbdm.sendall(bytes(cmd + "\r\n", encoding='ascii'))
   #print("Sent")
   status, lines = xbdm_parse_response(length)
 
   # Respond with requested data
   if status == 204:
-    xbdm.send(data)
+    xbdm.sendall(data)
     status, lines = xbdm_parse_response()
 
   #print("Done")
